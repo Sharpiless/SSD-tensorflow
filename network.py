@@ -43,11 +43,6 @@ class Net(object):
             [tf.float32]*7
         )
 
-        variables_to_restore = tf.contrib.framework.get_variables_to_restore(
-            exclude=['block10/conv1x1/biases'])
-
-        # saver = tf.train.Saver(variables_to_restore)
-
         self.saver = tf.train.Saver()
 
     def ssd_net(self, inputs, scope='ssd_512_vgg'):
