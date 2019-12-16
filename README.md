@@ -1,11 +1,4 @@
-﻿# SSD目标检测算法详解 （二）代码详解
 
-这一篇讲一下一个简洁版SSD的代码，源码传送门：
-https://github.com/Sharpiless/SSD-tensorflow（欢迎关注我的Github账号呀）
-
-
-（PS：ckpt文件超过100M传不上了，，，需要的话可以自己训练或者私戳我）
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20191215222640896.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NDkzNjg4OQ==,size_16,color_FFFFFF,t_70)
 ## 主要分几个程序：
 #### 1、==config.py== ： 保存了整个项目的大部分参数；
 #### 2、==calculate_IOU.py== ： 计算预选框和真值框的IOU值，用于筛选正负样本；以及定义了对坐标进行encode和decode的函数；
