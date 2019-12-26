@@ -1,6 +1,7 @@
 import numpy as np
 import config as cfg
 import random
+import cv2
 
 
 class Cropper(object):
@@ -11,11 +12,11 @@ class Cropper(object):
 
         self.max_ratio = cfg.MAX_CROP_RATIO
 
+        self.gamma = cfg.GAMMA
+
     def random_flip(self, image, boxes):
 
-        flag = random.randint(0, 1)
-
-        if flag:
+        if random.randint(0, 1):
 
             image = np.flip(image, axis=1)
 
@@ -41,6 +42,23 @@ class Cropper(object):
         else:
             return image, boxes
 
+    def random_blur(self, image):
+
+        if random.randint(0, 1):
+
+            image = cv2.GaussianBlur(image, (3, 3), 3, 3)
+
+        return image
+
+    def random_gamma(self, image):
+
+        if random.randint(0, 1):
+
+            image = np.power(image, self.gamma)
+
+        return  image
+
+
     def random_crop(self, image, boxes, labels):
 
         h, w = image.shape[:2]
@@ -62,12 +80,12 @@ class Cropper(object):
         y_max = boxes[:, 2]
         x_max = boxes[:, 3]
 
-        raw_areas = (y_max - y_min) * (x_max - x_min)
-
         y_min = y_min - y
         y_max = y_max - y
         x_min = x_min - x
         x_max = x_max - x
+
+        raw_areas = (y_max - y_min) * (x_max - x_min)
 
         y_min = np.clip(y_min, 0, new_h)
         y_max = np.clip(y_max, 0, new_h)
@@ -76,10 +94,14 @@ class Cropper(object):
 
         new_areas = (y_max - y_min) * (x_max - x_min)
 
-        # keep_index = np.where(new_areas > raw_areas*0.7)[0]
+        keep_index = np.where(new_areas > raw_areas*0.5)[0]
 
         boxes = np.stack([y_min, x_min, y_max, x_max], axis=-1)
-        # boxes = boxes[keep_index]
-        # labels = labels[keep_index]
+        boxes = boxes[keep_index]
+        labels = labels[keep_index]
+
+        # image = self.random_blur(image)
+
+        # image = self.random_gamma(image)
 
         return image, boxes, labels

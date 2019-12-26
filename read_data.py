@@ -43,6 +43,15 @@ class Reader(object):
 
         return image.astype(np.float)
 
+    def standardize(self, image):
+    
+        mean = self.pixel_means
+        var = np.mean(np.square(image-mean))
+
+        image = (image - mean)/np.sqrt(var)
+
+        return image
+
     def load_one_info(self, name):
 
         filename = os.path.join(self.data_path, 'Annotations', name+'.xml')
@@ -164,6 +173,9 @@ class Reader(object):
 
         image, scale = self.resize_image(image)
 
+        # image = self.standardize(image)
+        image = image - self.pixel_means
+
         true_boxes = true_boxes * scale
 
         self.cursor += 1
@@ -195,7 +207,7 @@ if __name__ == "__main__":
 
         value = reader.generate()
 
-        image = value['image'].astype(np.int)
+        image = (value['image']+cfg.PIXEL_MEANS).astype(np.int)
         classes = value['classes'].astype(np.int)
         true_boxes = value['boxes']
 
