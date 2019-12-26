@@ -166,10 +166,10 @@ class Reader(object):
         true_boxes = self.true_labels[self.cursor]['boxes']
         true_labels = self.true_labels[self.cursor]['classes']
 
-        image, true_boxes = self.cropper.random_flip(image, true_boxes)
-
         image, true_boxes, true_labels = self.cropper.random_crop(
             image, true_boxes, true_labels)
+
+        image, true_boxes = self.cropper.random_flip(image, true_boxes)
 
         image, scale = self.resize_image(image)
 
@@ -203,7 +203,7 @@ if __name__ == "__main__":
 
     reader = Reader(is_training=True)
 
-    for _ in range(10):
+    while True:
 
         value = reader.generate()
 

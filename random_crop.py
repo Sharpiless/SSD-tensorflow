@@ -12,7 +12,11 @@ class Cropper(object):
 
         self.max_ratio = cfg.MAX_CROP_RATIO
 
-        self.gamma = cfg.GAMMA
+        self.gamma_max = cfg.GAMMA_max
+
+        self.gamma_min = cfg.GAMMA_min
+
+        self.area_ratio = cfg.CROP_MIN_AREA
 
     def random_flip(self, image, boxes):
 
@@ -27,12 +31,10 @@ class Cropper(object):
             y_max = boxes[:, 2]
             x_max = boxes[:, 3]
 
-            new_y_min = y_max
-            new_y_max = y_min
+            new_y_min = y_min
+            new_y_max = y_max
             new_x_min = w - x_max
             new_x_max = w - x_min
-
-            # print('flip')
 
             boxes = np.stack(
                 [new_y_min, new_x_min, new_y_max, new_x_max], axis=-1)
@@ -40,11 +42,12 @@ class Cropper(object):
             return image, boxes
 
         else:
+
             return image, boxes
 
     def random_blur(self, image):
 
-        if random.randint(0, 1):
+        if not random.randint(0, 2):
 
             image = cv2.GaussianBlur(image, (3, 3), 3, 3)
 
@@ -54,10 +57,18 @@ class Cropper(object):
 
         if random.randint(0, 1):
 
-            image = np.power(image, self.gamma)
+            image_max = np.max(image)
+            image_min = np.min(image)
 
-        return  image
+            ratio = random.random()
 
+            gamma = self.gamma_min + (self.gamma_max-self.gamma_min)*ratio
+
+            image = np.power(image, gamma)
+
+            image = image/(np.max(image)-np.min(image))*(image_max-image_min)
+
+        return image
 
     def random_crop(self, image, boxes, labels):
 
@@ -94,14 +105,14 @@ class Cropper(object):
 
         new_areas = (y_max - y_min) * (x_max - x_min)
 
-        keep_index = np.where(new_areas > raw_areas*0.5)[0]
+        keep_index = np.where(new_areas > raw_areas*self.area_ratio)[0]
 
         boxes = np.stack([y_min, x_min, y_max, x_max], axis=-1)
         boxes = boxes[keep_index]
         labels = labels[keep_index]
 
-        # image = self.random_blur(image)
+        image = self.random_blur(image)
 
-        # image = self.random_gamma(image)
+        image = self.random_gamma(image)
 
         return image, boxes, labels

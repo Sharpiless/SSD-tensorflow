@@ -31,6 +31,10 @@ class Net(object):
 
         self.keep_rate = cfg.KEEP_RATE
 
+        self.model_path = cfg.MODEL_PATH
+
+        self.momentum = cfg.MOMENTUM
+
         self.Sk = cfg.Sk
 
         self.x = tf.placeholder(tf.float32, [None, None, 3])
@@ -199,6 +203,9 @@ class Net(object):
 
     def train_net(self):
 
+        if not os.path.exists(cfg.MODEL_PATH):
+            os.makedirs(cfg.MODEL_PATH)
+
         self.target_labels = []
         self.target_scores = []
         self.target_loc = []
@@ -226,7 +233,7 @@ class Net(object):
         # gradients = self.optimizer.compute_gradients(self.loss)
 
         self.optimizer = tf.compat.v1.train.MomentumOptimizer(
-            learning_rate=self.learning_rate, momentum=0.9)
+            learning_rate=self.learning_rate, momentum=self.momentum)
         # self.optimizer = tf.compat.v1.train.AdamOptimizer(self.learning_rate)
 
         self.train_step = self.optimizer.minimize(self.loss)
@@ -235,7 +242,7 @@ class Net(object):
 
             sess.run(tf.compat.v1.global_variables_initializer())
 
-            ckpt = tf.train.get_checkpoint_state(cfg.MODEL_PATH)
+            ckpt = tf.train.get_checkpoint_state(self.model_path)
 
             if ckpt and ckpt.model_checkpoint_path:
                 # 如果保存过模型，则在保存的模型的基础上继续训练
@@ -259,13 +266,13 @@ class Net(object):
                     test = sess.run(self.target_scores, feed_dict)
 
                     total_pos = 0
+                    
                     for v in test:
                         if np.max(v) > cfg.THRESHOLD:
                             total_pos += 1
                     if total_pos == 0:
-                        with open('NumError.txt', 'a') as f:
-                            f.write(value['image_path']+'\n')
                         continue
+
                     try:
 
                         sess.run(self.train_step, feed_dict)
@@ -273,8 +280,8 @@ class Net(object):
                         loss_0, loss_1, loss_2 = sess.run(
                             [self.total_cross_pos, self.total_cross_neg, self.total_loc], feed_dict)
 
-                    except EOFError:
-                        pass
+                    except EOFError as e:
+                        print(e)
 
                     loss_list.append(
                         np.array([loss_0, loss_1, loss_2])
@@ -292,7 +299,7 @@ class Net(object):
                     f.write(str(loss_values)+'\n')
 
                 self.saver.save(sess, os.path.join(
-                    cfg.MODEL_PATH, 'model.ckpt'))
+                    self.model_path, 'model.ckpt'))
 
                 print('epoch:{},pos_loss:{},neg_loss:{},loc_loss:{}'.format(
                     self.reader.epoch, loss_values[0], loss_values[1], loss_values[2]
@@ -300,9 +307,6 @@ class Net(object):
 
 
 if __name__ == '__main__':
-
-    if not os.path.exists(cfg.MODEL_PATH):
-        os.makedirs(cfg.MODEL_PATH)
 
     net = Net(is_training=True)
 

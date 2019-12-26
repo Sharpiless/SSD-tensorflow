@@ -75,76 +75,124 @@ def decode_targets(anchors, targets, image_shape, prior_scaling=cfg.PRIOT_SCALIN
     return boxes
 
 
+
 def fast_bbox_overlaps(holdon_anchor, true_boxes):
 
+
     num_true = true_boxes.shape[0]  # 真值框的个数 m
+
     num_holdon = holdon_anchor.shape[0]  # 候选框的个数（已删去越界的样本）n
 
+
     true_y_max = true_boxes[:, 2]
+
     true_y_min = true_boxes[:, 0]
+
     true_x_max = true_boxes[:, 3]
+
     true_x_min = true_boxes[:, 1]
 
+
     anchor_y_max = holdon_anchor[:, 2]
+
     anchor_y_min = holdon_anchor[:, 0]
+
     anchor_x_max = holdon_anchor[:, 3]
+
     anchor_x_min = holdon_anchor[:, 1]
 
+
     true_h = true_y_max - true_y_min
+
     true_w = true_x_max - true_x_min
 
+
     true_h = np.expand_dims(true_h, axis=1)
+
     true_w = np.expand_dims(true_w, axis=1)
 
+
     anchor_h = holdon_anchor[:, 2] - holdon_anchor[:, 0]
+
     anchor_w = holdon_anchor[:, 3] - holdon_anchor[:, 1]
 
+
     true_area = true_w * true_h
+
     anchor_area = anchor_w * anchor_h
 
+
     min_y_up = np.expand_dims(true_y_max, axis=1) < anchor_y_max
+
     min_y_up = np.where(min_y_up, np.expand_dims(
+
         true_y_max, axis=1), np.expand_dims(anchor_y_max, axis=0))
 
+
     max_y_down = np.expand_dims(true_y_min, axis=1) > anchor_y_min
+
     max_y_down = np.where(max_y_down, np.expand_dims(
+
         true_y_min, axis=1), np.expand_dims(anchor_y_min, axis=0))
+
 
     lh = min_y_up - max_y_down
 
+
     min_x_up = np.expand_dims(true_x_max, axis=1) < anchor_x_max
+
     min_x_up = np.where(min_x_up, np.expand_dims(
+
         true_x_max, axis=1), np.expand_dims(anchor_x_max, axis=0))
 
+
     max_x_down = np.expand_dims(true_x_min, axis=1) > anchor_x_min
+
     max_x_down = np.where(max_x_down, np.expand_dims(
+
         true_x_min, axis=1), np.expand_dims(anchor_x_min, axis=0))
+
 
     lw = min_x_up - max_x_down
 
+
     pos_index = np.where(
+
         np.logical_and(
+
             lh > 0, lw > 0
+
         )
+
     )
+
 
     overlap_area = lh * lw  # (n, m)
 
+
     overlap_weight = np.zeros(shape=lh.shape, dtype=np.int)
+
 
     overlap_weight[pos_index] = 1
 
+
     all_area = true_area + anchor_area
+
 
     dialta_S = all_area - overlap_area
 
+
     dialta_S = np.where(dialta_S > 0, dialta_S, all_area)
+
 
     IOU = np.divide(overlap_area, dialta_S)
 
+
     IOU = np.where(overlap_weight, IOU, 0)
 
+
     IOU_s = np.transpose(IOU)
+
 
     return IOU_s.astype(np.float32)  # (n, m) 转置矩阵
 

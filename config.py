@@ -3,6 +3,10 @@ import numpy as np
 import os
 
 
+LEARNING_RATE = 2e-4 # 学习率
+
+MOMENTUM = 0.9
+
 NMS_THRESHOLD = 0.3  # nms（非极大值抑制）的阙值
 
 DATA_PATH = '../VOC2012'  # 数据集路径
@@ -17,11 +21,15 @@ MAX_SIZE = 1000  # 图片最大边长
 
 MIN_SIZE = 600  # 图片最小边长
 
+CROP_MIN_AREA = 0.5
+
 EPOCHES = 20000  # 迭代次数
 
 BATCHES = 64
 
-GAMMA = 1.2
+GAMMA_min = 0.6
+
+GAMMA_max = 1.6
 
 KEEP_RATE = 0.8
 
@@ -29,15 +37,13 @@ WEIGHT_DECAY = 5e-3
 
 THRESHOLD = 0.5  # 正负样本匹配的阙值
 
-SCORE_THRESHOLD = 0.998  # 测试时正样本得分阙值
+SCORE_THRESHOLD = 0.99  # 测试时正样本得分阙值
 
-MIN_CROP_RATIO = 0.6  # 随即裁剪的最小比率
+MIN_CROP_RATIO = 0.8  # 随即裁剪的最小比率
 
 MAX_CROP_RATIO = 1.0
 
 MODEL_PATH = './model/'  # 模型保存路径
-
-LEARNING_RATE = 2e-4 # 学习率
 
 CLASSES = ['', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus',
 

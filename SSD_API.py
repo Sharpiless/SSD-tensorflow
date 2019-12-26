@@ -83,6 +83,7 @@ class SSD_detector(object):
                 pos_boxes = decode_targets(pos_anchors, pos_loc, image.shape)
 
                 pos_scores = np.expand_dims(pos_scores, axis=-1)
+                
                 keep_index = py_cpu_nms(np.hstack([pos_boxes, pos_scores]))
 
                 self.draw_result(
@@ -145,4 +146,6 @@ if __name__ == "__main__":
 
     detector = SSD_detector()
 
-    detector.test_ssd(['./{}.jpg'.format(k) for k in range(5)])
+    images_name = ['./{}.jpg'.format(i) for i in range(7)]
+
+    detector.test_ssd(images_name)

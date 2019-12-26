@@ -101,7 +101,7 @@ if __name__ == "__main__":
             result_loc = np.vstack(result_loc)
             result_labels = np.hstack(result_labels).astype(np.int)
 
-            result_bboxes = decode_targets(result_anchors, result_loc)
+            result_bboxes = decode_targets(result_anchors, result_loc, image_shape)
 
             font = cv2.FONT_HERSHEY_SIMPLEX
 
