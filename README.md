@@ -13,10 +13,6 @@
 
 # ———————分割线————————
 
-正文开始前，按照惯例闲扯一会……emmm吐槽一下markdown吧，，，复制上本地代码的时候还要每行重新多打一个回车心好累呀，，，再就没什么要说的了，，，那就下期预告吧：下一系列讲一下FCN语义分割吧，先放图——
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20191215222818237.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80NDkzNjg4OQ==,size_16,color_FFFFFF,t_70)
-
-# ———————分割线————————
 ## 1、config.py
 保存了这个项目的参数，先上代码：
 ```python
