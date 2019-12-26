@@ -47,9 +47,20 @@ class Cropper(object):
 
     def random_blur(self, image):
 
-        if not random.randint(0, 2):
+        if not random.randint(0, 1):
 
-            image = cv2.GaussianBlur(image, (3, 3), 3, 3)
+            image = cv2.GaussianBlur(image, (3, 3), 0)
+
+        return image
+
+    def random_equalize(self, image):
+
+        if random.randint(0, 1):
+
+            image_max = np.max(image)
+            image_min = np.min(image)
+
+            image = image/(image_max-image_min)*255
 
         return image
 
@@ -114,5 +125,7 @@ class Cropper(object):
         image = self.random_blur(image)
 
         image = self.random_gamma(image)
+
+        image = self.random_equalize(image)
 
         return image, boxes, labels

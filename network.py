@@ -8,6 +8,7 @@ import numpy as np
 import os
 import logging as log
 
+
 slim = tf.contrib.slim
 
 
@@ -52,13 +53,6 @@ class Net(object):
             [tf.float32]*7
         )
 
-        with open('var.txt', 'a') as f:
-            variables = tf.contrib.framework.get_variables_to_restore()
-            variables_name = [
-                v.name for v in variables if v.name.split('/')[0] != 'output']
-            for v in variables_name:
-                f.write(v+'\n')
-
         self.saver = tf.train.Saver()
 
     def ssd_net(self, inputs, scope='ssd_512_vgg'):
@@ -68,37 +62,41 @@ class Net(object):
         with tf.variable_scope(scope, 'ssd_512_vgg', [inputs], reuse=None):
 
             with slim.arg_scope([slim.conv2d],
-                           activation_fn=tf.nn.relu,
-                           weights_regularizer=slim.l2_regularizer(self.weight_decay)):
+                                activation_fn=tf.nn.relu,
+                                weights_regularizer=slim.l2_regularizer(self.weight_decay)):
 
                 # Block 1
                 net = slim.repeat(inputs, 2, slim.conv2d,
-                                64, [3, 3], scope='conv1')
-                net = slim.max_pool2d(net, [2, 2], scope='pool1', padding='SAME')
+                                  64, [3, 3], scope='conv1')
+                net = slim.max_pool2d(
+                    net, [2, 2], scope='pool1', padding='SAME')
 
                 # Block 2
                 net = slim.repeat(net, 2, slim.conv2d,
-                                128, [3, 3], scope='conv2')
-                net = slim.max_pool2d(net, [2, 2], scope='pool2', padding='SAME')
+                                  128, [3, 3], scope='conv2')
+                net = slim.max_pool2d(
+                    net, [2, 2], scope='pool2', padding='SAME')
 
                 # Block 3
                 net = slim.repeat(net, 3, slim.conv2d,
-                                256, [3, 3], scope='conv3')
-                net = slim.max_pool2d(net, [2, 2], scope='pool3', padding='SAME')
+                                  256, [3, 3], scope='conv3')
+                net = slim.max_pool2d(
+                    net, [2, 2], scope='pool3', padding='SAME')
 
                 # net = tf.layers.batch_normalization(net, training=self.is_training)
 
                 # Block 4
                 net = slim.repeat(net, 3, slim.conv2d,
-                                512, [3, 3], scope='conv4')
+                                  512, [3, 3], scope='conv4')
 
                 layers['block4'] = net
 
-                net = slim.max_pool2d(net, [2, 2], scope='pool4', padding='SAME')
+                net = slim.max_pool2d(
+                    net, [2, 2], scope='pool4', padding='SAME')
 
                 # Block 5
                 net = slim.repeat(net, 3, slim.conv2d,
-                                512, [3, 3], scope='conv5')
+                                  512, [3, 3], scope='conv5')
 
                 # Block 6
                 net = slim.conv2d(net, 1024, [3, 3], rate=6, scope='conv6')
@@ -122,7 +120,7 @@ class Net(object):
 
                     net = slim.conv2d(net, 256, [1, 1], scope='conv1x1')
                     net = slim.conv2d(net, 512, [3, 3], 2,
-                                    scope='conv3x3', padding='SAME')
+                                      scope='conv3x3', padding='SAME')
 
                 layers['block8'] = net
 
@@ -131,7 +129,7 @@ class Net(object):
 
                     net = slim.conv2d(net, 128, [1, 1], scope='conv1x1')
                     net = slim.conv2d(net, 256, [3, 3], 2,
-                                    scope='conv3x3', padding='SAME')
+                                      scope='conv3x3', padding='SAME')
 
                 layers['block9'] = net
 
@@ -140,7 +138,7 @@ class Net(object):
 
                     net = slim.conv2d(net, 128, [1, 1], scope='conv1x1')
                     net = slim.conv2d(net, 256, [3, 3], 2,
-                                    scope='conv3x3', padding='SAME')
+                                      scope='conv3x3', padding='SAME')
 
                 layers['block10'] = net
 
@@ -149,7 +147,7 @@ class Net(object):
 
                     net = slim.conv2d(net, 128, [1, 1], scope='conv1x1')
                     net = slim.conv2d(net, 256, [3, 3], 2,
-                                    scope='conv3x3', padding='SAME')
+                                      scope='conv3x3', padding='SAME')
 
                 layers['block11'] = net
 
@@ -158,7 +156,7 @@ class Net(object):
 
                     net = slim.conv2d(net, 128, [1, 1], scope='conv1x1')
                     net = slim.conv2d(net, 256, [4, 4], 2,
-                                    scope='conv4x4', padding='SAME')
+                                      scope='conv4x4', padding='SAME')
 
                 layers['block12'] = net
                 self.layers = layers
@@ -203,8 +201,8 @@ class Net(object):
 
     def train_net(self):
 
-        if not os.path.exists(cfg.MODEL_PATH):
-            os.makedirs(cfg.MODEL_PATH)
+        if not os.path.exists(self.model_path):
+            os.makedirs(self.model_path)
 
         self.target_labels = []
         self.target_scores = []
@@ -266,30 +264,25 @@ class Net(object):
                     test = sess.run(self.target_scores, feed_dict)
 
                     total_pos = 0
-                    
+
                     for v in test:
                         if np.max(v) > cfg.THRESHOLD:
                             total_pos += 1
                     if total_pos == 0:
                         continue
 
-                    try:
+                    sess.run(self.train_step, feed_dict)
 
-                        sess.run(self.train_step, feed_dict)
-
-                        loss_0, loss_1, loss_2 = sess.run(
-                            [self.total_cross_pos, self.total_cross_neg, self.total_loc], feed_dict)
-
-                    except EOFError as e:
-                        print(e)
+                    loss_0, loss_1, loss_2 = sess.run(
+                        [self.total_cross_pos, self.total_cross_neg, self.total_loc], feed_dict)
 
                     loss_list.append(
                         np.array([loss_0, loss_1, loss_2])
                     )
 
-                    print('batch:{},pos_loss:{},neg_loss:{},loc_loss:{}'.format(
-                        batch, loss_0, loss_1, loss_2
-                    ), end='\r')
+                    # print('batch:{},pos_loss:{},neg_loss:{},loc_loss:{}'.format(
+                    #     batch, loss_0, loss_1, loss_2
+                    # ), end='\r')
 
                 loss_values = np.array(loss_list)  # (64, 3)
 
