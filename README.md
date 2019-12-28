@@ -1,4 +1,8 @@
 
+运行network.py训练模型；
+运行SSD_API.py来测试模型；
+
+
 ## 主要分几个程序：
 #### 1、==config.py== ： 保存了整个项目的大部分参数；
 #### 2、==calculate_IOU.py== ： 计算预选框和真值框的IOU值，用于筛选正负样本；以及定义了对坐标进行encode和decode的函数；
