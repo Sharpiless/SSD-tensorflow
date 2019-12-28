@@ -166,8 +166,8 @@ class Reader(object):
         true_boxes = self.true_labels[self.cursor]['boxes']
         true_labels = self.true_labels[self.cursor]['classes']
 
-        image, true_boxes, true_labels = self.cropper.random_crop(
-            image, true_boxes, true_labels)
+        # image, true_boxes, true_labels = self.cropper.random_crop(
+        #     image, true_boxes, true_labels)
 
         image, true_boxes = self.cropper.random_flip(image, true_boxes)
 

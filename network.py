@@ -271,10 +271,21 @@ class Net(object):
                     if total_pos == 0:
                         continue
 
-                    sess.run(self.train_step, feed_dict)
+                    try:
 
-                    loss_0, loss_1, loss_2 = sess.run(
-                        [self.total_cross_pos, self.total_cross_neg, self.total_loc], feed_dict)
+                        sess.run(self.train_step, feed_dict)
+
+                        loss_0, loss_1, loss_2 = sess.run(
+                            [self.total_cross_pos, self.total_cross_neg, self.total_loc], feed_dict)
+
+                    except KeyboardInterrupt:
+
+                        self.saver.save(sess, os.path.join(
+                            self.model_path, 'model.ckpt'))
+                        
+                        print('Model Saved.')
+
+                        raise KeyboardInterrupt
 
                     loss_list.append(
                         np.array([loss_0, loss_1, loss_2])

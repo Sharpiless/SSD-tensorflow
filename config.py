@@ -5,6 +5,8 @@ import os
 
 LEARNING_RATE = 2e-4 # 学习率
 
+SCORE_THRESHOLD = 0.995  # 测试时正样本得分阙值
+
 MOMENTUM = 0.9
 
 NMS_THRESHOLD = 0.3  # nms（非极大值抑制）的阙值
@@ -36,8 +38,6 @@ KEEP_RATE = 0.8
 WEIGHT_DECAY = 5e-3
 
 THRESHOLD = 0.5  # 正负样本匹配的阙值
-
-SCORE_THRESHOLD = 0.99  # 测试时正样本得分阙值
 
 MIN_CROP_RATIO = 0.8  # 随即裁剪的最小比率
 
